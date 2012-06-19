@@ -1,0 +1,303 @@
+############################################################################
+#
+#  Program:  OpenSees
+#
+#  Purpose:  A Top-level Makefile to create the libraries needed
+#            to use the OpenSees framework.
+#
+#   version created for Redhat Enterprise LINUX distribution
+#
+#  Written: fmk
+#  Created: 01/2003
+#  revised: Peter Mackenzie-Helnwein, Wed Apr 27, 2011
+#
+#
+############################################################################
+
+# %---------------------------------%
+# |  SECTION 1: PROGRAM             |
+# %---------------------------------%
+
+#
+# Specify the location and name of the OpenSees interpreter program
+# that will be created (if this all works!)
+
+OpenSees_PROGRAM = $(HOME)/bin/OpenSeesMP
+
+# %---------------------------------%
+# |  SECTION 2: MAKEFILE CONSTANTS  |
+# %---------------------------------%
+#
+# Specify the constants the are used as control structure variables in the Makefiles.
+
+OPERATING_SYSTEM = LINUX
+#GRAPHICS = UsingOpenGL
+GRAPHICS = NONE
+
+#RELIABILITY = YES_RELIABILITY, NO_RELIABILITY
+RELIABILITY = NO_RELIABILITY
+
+#PROGRAMMING_MODE = PARALLEL
+PROGRAMMING_MODE = PARALLEL_INTERPRETERS
+
+
+# %---------------------------------%
+# |  SECTION 3: PATHS               |
+# %---------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries or if you have
+# any of the libraries already leave the directory location blank AND
+# remove the directory from DIRS.
+
+#  PUT YOUR HOME DIRECTOREY HERE
+HOME  = /clumeq/src/opensees/2.3.2-mp
+FE    = $(HOME)/OpenSees/SRC
+BASE  =
+
+BLASdir      = $(HOME)/OpenSees/OTHER/BLAS
+CBLASdir     = $(HOME)/OpenSees/OTHER/CBLAS
+LAPACKdir    = $(HOME)/OpenSees/OTHER/LAPACK
+AMDdir       = $(HOME)/OpenSees/OTHER/AMD
+ARPACKdir    = $(HOME)/OpenSees/OTHER/ARPACK
+UMFPACKdir   = $(HOME)/OpenSees/OTHER/UMFPACK
+METISdir     = $(HOME)/OpenSees/OTHER/METIS
+SRCdir       = $(HOME)/OpenSees/SRC
+# SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU
+SUPERLUdir   = $(HOME)/OpenSees/OTHER/SuperLU_4.1/SRC
+SUPERLU_DISTdir = $(HOME)/OpenSees/OTHER/SuperLU_DIST_2.5/SRC 
+MPIdir       = /software/MPI/openmpi/1.4.5_gcc
+
+DIRS        = $(BLASdir) \
+              $(CBLASdir) \
+              $(SUPERLUdir) \
+	      $(SUPERLU_DISTdir) \
+              $(LAPACKdir) \
+              $(AMDdir) \
+              $(ARPACKdir) \
+              $(UMFPACKdir) \
+              $(METISdir) \
+              $(SRCdir)
+
+# %-------------------------------------------------------%
+# | SECTION 4: LIBRARIES                                  |
+# |                                                       |
+# | The following section defines the libraries that will |
+# | be created and/or linked with when the libraries are  |
+# | being created or linked with.                         |
+# %-------------------------------------------------------%
+#
+# Note: if vendor supplied BLAS and LAPACK libraries leave the
+# libraries blank. You have to get your own copy of the tcl/tk
+# library!!
+#
+# Note: For libraries that will be created (any in DIRS above)
+# make sure the directory exsists where you want the library to go!
+
+FE_LIBRARY          = $(HOME)/lib/libOpenSees.a
+NDARRAY_LIBRARY     = $(HOME)/lib/libndarray.a  # BJ_UCD jeremic@ucdavis.edu
+MATMOD_LIBRARY      = $(HOME)/lib/libmatmod.a   # BJ_UCD jeremic@ucdavis.edu
+BJMISC_LIBRARY      = $(HOME)/lib/libBJmisc.a  # BJ_UCD jeremic@ucdavis.edu
+LAPACK_LIBRARY      = $(HOME)/lib/libLapack.a
+BLAS_LIBRARY        = $(HOME)/lib/libBlas.a
+SUPERLU_LIBRARY     = $(HOME)/lib/libSuperLU.a
+DISTRIBUTED_SUPERLU_LIBRARY = $(HOME)/lib/libSuperLU_dist.a
+CBLAS_LIBRARY       = $(HOME)/lib/libCBlas.a
+AMD_LIBRARY         = $(HOME)/lib/libAMD.a
+ARPACK_LIBRARY      = $(HOME)/lib/libArpack.a
+UMFPACK_LIBRARY     = $(HOME)/lib/libUmfpack.a
+METIS_LIBRARY       = $(HOME)/lib/libMetis.a
+
+#TCL_LIBRARY         = /usr/local/tcl/lib/libtcl8.4.so
+TCL_LIBRARY         = /usr/lib64/libtcl8.4.so
+
+#GRAPHIC_LIBRARY     = -L/usr/X11/R6/lib -lGL -lGLU
+GRAPHIC_LIBRARY     =
+
+RELIABILITY_LIBRARY =
+
+
+# WATCH OUT .. These libraries are removed when 'make wipe' is invoked.
+
+WIPE_LIBS = $(FE_LIBRARY) \
+           $(NDARRAY_LIBRARY) \
+           $(MATMOD_LIBRARY) \
+           $(SUPERLU_LIBRARY) \
+           $(AMD_LIBRARY) \
+           $(ARPACK_LIBRARY) \
+           $(UMFPACK_LIBRARY) \
+           $(METIS_LIBRARY) \
+           $(LAPACK_LIBRARY) \
+           $(BLAS_LIBRARY) \
+           $(CBLAS_LIBRARY) \
+   $(RELIABILITY_LIBRARY)
+
+# %---------------------------------------------------------%
+# | SECTION 5: COMPILERS                                    |
+# |                                                         |
+# | The following macros specify compilers, linker/loaders, |
+# | the archiver, and their options.  You need to make sure |
+# | these are correct for your system.                      |
+# %---------------------------------------------------------%
+
+# ###################################################
+# # Compilers
+# ###################################################
+
+#CC++            =  g++
+#CC              =  gcc
+#FC              =  g77
+#FC              =  gfortran
+#F90             =
+#LINKER          =  g++
+
+CC++		= mpicxx
+CC		= mpicc
+FC		= mpif90
+F90		= mpif90
+LINKER		= mpicxx
+
+AR = ar
+ARFLAGS = cqls
+RANLIB = ranlib
+RANLIBFLAGS     =
+
+#GRAPHIC_FLAG = -D_GLX
+GRAPHIC_FLAG = -D_NOGRAPHICS
+#PROGRAMMING_FLAG =
+PROGRAMMING_FLAG = -D_PARALLEL_INTERPRETERS
+RELIABILITY_FLAG =
+
+C++FLAGS         = -D_LINUX -D_UNIX  -D_TCL84 -D_MYSQL $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
+      $(PROGRAMMING_FLAG) -funroll-loops -fcse-follow-jumps \
+-fthread-jumps -fcse-skip-blocks -frerun-cse-after-loop \
+-felide-constructors \
+-fcaller-saves  -ffloat-store -fforce-addr \
+-fexpensive-optimizations \
+-fforce-addr \
+-finline-functions \
+-fkeep-inline-functions \
+              -fno-function-cse -fno-inline -fno-peephole \
+              -fomit-frame-pointer \
+              -fstrength-reduce -fthread-jumps
+
+# -fschedule-insns -fschedule-insns2 -D_LINUX -D_UNIX \
+#              -fschedule-insns -fschedule-insns2 \
+
+CFLAGS          = -O2 $(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) $(PROGRAMMING_FLAG)
+FFLAGS          = -Wall
+LINKFLAGS       = -rdynamic
+
+
+# Misc
+MAKE            = make
+CD              = cd
+ECHO            = echo
+RM              = rm
+RMFLAGS         = -f
+SHELL           = /bin/sh
+
+# %---------------------------------------------------------%
+# | SECTION 6: COMPILATION                                  |
+# |                                                         |
+# | The following macros specify the macros used in         |
+# | to compile the source code into object code.            |
+# %---------------------------------------------------------%
+
+.SUFFIXES:
+.SUFFIXES: .C .c .f .f90 .cpp .o .cpp
+
+#
+# %------------------%
+# | Default command. |
+# %------------------%
+#
+.DEFAULT:
+	@$(ECHO) "Unknown target $@, try:  make help"
+#
+# %-----------------------------------------------%
+# |  Command to build .o files from source files. |
+# %-----------------------------------------------%
+#
+
+.cpp.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $<
+
+.C.o:
+	@$(ECHO) Making $@ from $<
+	$(CC++) $(C++FLAGS) $(INCLUDES) -c $<
+
+.c.o:
+	@$(ECHO) Making $@ from $<
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.f.o:     
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
+
+.f77.o:     
+	@$(ECHO) Making $@ from $<
+	$(FC) $(FFLAGS) -c $< -o $@
+
+.f90.o:     
+	@$(ECHO) Making $@ from $<
+	$(FC90) $(FFLAGS) -c $< -o $@
+
+# %---------------------------------------------------------%
+# | SECTION 7: OTHER LIBRARIES                              |
+# |                                                         |
+# | The following macros specify other libraries that must  |
+# | be linked with when creating executables. These are     |
+# | platform specific and typically order does matter!!     |
+# %---------------------------------------------------------%
+MACHINE_LINKLIBS  = -L$(BASE)/lib64 \
+    -L$(BASE)/usr/lib64 \
+                    -L$(HOME)/lib \
+
+MACHINE_NUMERICAL_LIBS  = -lm \
+  $(AMD_LIBRARY) \
+  $(ARPACK_LIBRARY) \
+  $(DISTRIBUTED_SUPERLU_LIBRARY) \
+  $(SUPERLU_LIBRARY) \
+  $(UMFPACK_LIBRARY) \
+  $(LAPACK_LIBRARY)  \
+  $(BLAS_LIBRARY) \
+  $(CBLAS_LIBRARY) \
+  $(GRAPHIC_LIBRARY)\
+  $(METIS_LIBRARY)\
+  $(RELIABILITY_LIBRARY)
+
+MACHINE_SPECIFIC_LIBS = -ldl  -lieee -lm -lc -lgfortran -lpng -Wl,-rpath,/usr/local/lib
+
+PARALLEL_LIB = \
+        $(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.o \
+	$(FE)/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.o \
+	#$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSOE.o \
+        #$(FE)/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.o \
+        #$(FE)/system_of_eqn/linearSOE/diagonal/MPIDiagonalSolver.o \
+        #$(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o \
+	#$(FE)/system_of_eqn/linearSOE/sparseGEN/SparseGenColLinSolver.o \
+
+
+# %---------------------------------------------------------%
+# | SECTION 8: INCLUDE FILES                                |
+# |                                                         |
+# | The following macros specify include files needed for   |
+# | compilation.                                            |
+# %---------------------------------------------------------%
+
+
+MACHINE_INCLUDES        = \
+                          -I$(HOME)/include   \
+                  -I$(UMFPACKdir) \
+                  -I$(MPIdir) \
+                  -I$(SUPERLUdir)\
+		  -I$(SUPERLU_DISTdir) 
+
+# this file contains all the OpenSees/SRC includes
+include $(FE)/Makefile.incl
+
+TCL_INCLUDES =
+
+INCLUDES =  $(MACHINE_INCLUDES) $(TCL_INCLUDES) $(FE_INCLUDES)
+
